@@ -1,0 +1,11 @@
+customer_id,email,country,signup_date,credit_limit
+A1001,ana.souza@example.com,BR,2024-01-15,1500
+A1002,marco.oliveira@example.com,AR,2024-02-10,980
+A1002,duplicado@example.com,AR,2024-02-10,980
+A1003,joao.sem-arroba,BR,2024-01-11,400
+A1004,,CL,2024-01-25,700
+A1005,camila@example.com,XX,2024-01-30,1200
+A1006,lara@example.com,MX,2099-01-01,300
+A1007,sergio@example.com,CO,2024-01-04,-20
+,AnaSemId@example.com,BR,2024-01-03,80
+A1008,paula@example.com,UY,2024-01-06,50

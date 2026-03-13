@@ -1,0 +1,2 @@
+[console_scripts]
+dq-pipeline = etl_dq.cli:main
