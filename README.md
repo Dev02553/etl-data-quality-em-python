@@ -1,35 +1,18 @@
 # ETL & Data Quality em Python
 
+![CI](https://github.com/Dev02553/etl-data-quality-em-python/actions/workflows/ci.yml/badge.svg)
+![Status](https://img.shields.io/badge/status-completo-22c55e)
+![Python](https://img.shields.io/badge/Python-3.12-3776ab)
+![Pytest](https://img.shields.io/badge/Pytest-12%20testes-0a9edc)
+
 **Completo • 2024**  
-Pipeline de dados com validações, rastreabilidade e geração de relatório em Excel (Data Quality).
+Pipeline de dados com validações, rastreabilidade e geração de relatório em Excel e HTML (Data Quality).
 
 ## Stack
 **Dados** • **Automação** • **Python** • **Pandas** • **OpenPyXL** • **Pytest** • **CLI**
 
-## Foco
-- **Qualidade de dados**
-- **Regras + evidências**
-
-## Saída
-- **Excel (XLSX)**
-- **Aba `Data_Quality`**
-
-## Testes
-- **Pytest**
-- **Validações automatizadas**
-
-## Uso
-- **CLI**
-- **Execução simples por comando**
-
-## Métricas
-- Total de linhas processadas
-- Linhas com inconsistências
-- Total de evidências geradas
-- DQ score
-- Regras com falha
-
 ## Como executar
+
 ### 1) Instalar dependências
 ```bash
 pip install -e .
@@ -46,17 +29,24 @@ python -m pytest -q
 python main.py --input ./data --output ./output/report.xlsx
 ```
 
-> Execute os comandos na raiz do repositório, onde estão o `main.py` e o `pyproject.toml`.
+> Execute os comandos na raiz do repositório, onde estão o `main.py` e o `pyproject.toml`.  
+> O relatório HTML é gerado automaticamente na mesma pasta do XLSX.
 
 ## Destaques
-- **Extract → Transform → Validate → Load**
-- **Regras de qualidade: obrigatórios, tipos, duplicados e datas**
-- **Relatório final em XLSX com aba `Data_Quality`**
-- **Rastreabilidade por linha, regra e arquivo de origem**
+- Extract → Transform → Validate → Load com logs por etapa
+- 9 regras de Data Quality: obrigatórios, tipos, duplicados, datas e domínio
+- `DQIssue` como modelo de dados para evidências rastreáveis
+- Validação de colunas obrigatórias antes de aplicar regras
+- Relatório em XLSX + HTML navegável gerados automaticamente
+- 12 testes com Pytest cobrindo todas as regras e cenários de pipeline
+- CI com GitHub Actions rodando testes a cada push
 
 ## Estrutura do projeto
 ```text
 etl-data-quality-python/
+├─ .github/
+│  └─ workflows/
+│     └─ ci.yml
 ├─ data/
 │  └─ customers.csv
 ├─ output/
@@ -68,6 +58,7 @@ etl-data-quality-python/
 │     ├─ models.py
 │     ├─ pipeline.py
 │     ├─ reporting.py
+│     ├─ reporting_html.py
 │     └─ rules.py
 ├─ tests/
 │  ├─ conftest.py
@@ -75,21 +66,23 @@ etl-data-quality-python/
 ├─ .gitignore
 ├─ main.py
 ├─ pyproject.toml
+├─ requirements.txt
 └─ README.md
 ```
 
 ## Regras implementadas
-- `required_customer_id`
-- `required_email`
-- `email_format`
-- `unique_customer_id`
-- `allowed_country`
-- `signup_date_valid_type`
-- `signup_date_not_future`
-- `credit_limit_numeric_type`
-- `credit_limit_non_negative`
+- `required_customer_id` — customer_id é obrigatório
+- `required_email` — email é obrigatório
+- `email_format` — email deve ter formato válido
+- `unique_customer_id` — customer_id deve ser único
+- `allowed_country` — country deve pertencer ao domínio LATAM
+- `signup_date_valid_type` — signup_date deve ser data válida
+- `signup_date_not_future` — signup_date não pode estar no futuro
+- `credit_limit_numeric_type` — credit_limit deve ser numérico
+- `credit_limit_non_negative` — credit_limit deve ser >= 0
 
 ## O que o pipeline faz
+
 ### Extract
 - Lê um arquivo CSV ou vários CSVs dentro de uma pasta.
 - Adiciona a coluna `source_file` para rastrear a origem de cada linha.
@@ -99,27 +92,30 @@ etl-data-quality-python/
 - Cria a coluna `row_number` para auditoria.
 
 ### Validate
-- Executa regras explícitas de qualidade separadas por domínio.
-- Gera evidências detalhadas por linha, regra, severidade e coluna.
+- Valida colunas obrigatórias antes de aplicar regras — erro claro se coluna faltar.
+- Executa 9 regras explícitas separadas por domínio.
+- Instancia `DQIssue` para cada evidência gerada.
 
 ### Load
-- Produz um arquivo XLSX com resumo executivo, evidências e base tratada.
+- Produz XLSX com resumo executivo, evidências e base tratada.
+- Produz HTML navegável na mesma pasta com o mesmo conteúdo.
 
 ## Relatório gerado
-O Excel final contém:
-- **`Data_Quality`**: visão executiva, métricas, resumo por regra e checkpoints do pipeline.
-- **`Evidences`**: falhas detalhadas por linha, regra, coluna, mensagem, valor inválido e arquivo de origem.
-- **`Clean_Data`**: dataset enriquecido com `dq_issue_count` e `dq_status`.
 
-## Exemplo de entrada
-Já deixei uma base de exemplo em:
-- `data/customers.csv`
+**XLSX:**
+- `Data_Quality` — visão executiva, métricas, resumo por regra e checkpoints.
+- `Evidences` — falhas detalhadas por linha, regra, coluna e valor inválido.
+- `Clean_Data` — dataset com `dq_issue_count` e `dq_status`.
+
+**HTML:**
+- Mesmo conteúdo em formato navegável no browser.
+- DQ score colorido: verde ≥ 80%, amarelo ≥ 60%, vermelho < 60%.
 
 ## Case Study
 
 ### Contexto / Context
 **PT**  
-Em rotinas operacionais e pipelines ETL, erros pequenos de tipo, data ou duplicidade viram problemas grandes em relatórios e decisões. O objetivo aqui é reduzir falhas com validações explícitas e rastreabilidade.
+Em rotinas operacionais e pipelines ETL, erros pequenos de tipo, data ou duplicidade viram problemas grandes em relatórios e decisões. O objetivo é reduzir falhas com validações explícitas e rastreabilidade.
 
 **EN**  
 In operational ETL routines, small issues in types, dates, or duplicates become big problems in reports and decisions. This project reduces failures through explicit validations and traceability.
@@ -127,32 +123,32 @@ In operational ETL routines, small issues in types, dates, or duplicates become 
 ### Objetivo / Goal
 **PT**
 - Extrair e padronizar dados de entrada.
-- Aplicar regras de Data Quality e gerar evidência.
-- Entregar um relatório final reutilizável e fácil de auditar.
+- Aplicar regras de Data Quality e gerar evidência rastreável.
+- Entregar relatório reutilizável e fácil de auditar em XLSX e HTML.
 
 **EN**
 - Extract and standardize input data.
-- Apply Data Quality rules and generate evidence.
-- Deliver a reusable final report that is easy to audit.
-
-### Abordagem / Approach
-**PT**
-- Pipeline por etapas com logs e checkpoints.
-- Validações separadas por regra: obrigatórios, tipos, duplicados e datas.
-- Saída em Excel com resumo executivo e detalhes por regra.
-
-**EN**
-- Step-based pipeline with logs and checkpoints.
-- Validations split by rule: required fields, types, duplicates, and dates.
-- Excel output with executive summary and rule-by-rule details.
+- Apply Data Quality rules and generate traceable evidence.
+- Deliver a reusable, auditable report in both XLSX and HTML.
 
 ### Resultados / Results
 **PT**
-- Menos retrabalho: erros são detectados antes do consumo em relatórios.
-- Rastreabilidade: fica claro o porquê de cada inconsistência.
-- Base pronta para evoluir com CI, novas fontes e novas métricas.
+- Menos retrabalho: erros detectados antes do consumo em relatórios.
+- Rastreabilidade: o porquê de cada inconsistência é explícito.
+- CI automático garante que nenhum push quebra as validações.
 
 **EN**
-- Less rework: issues are detected before reporting and consumption.
+- Less rework: issues detected before reporting and consumption.
 - Traceability: the reason behind each inconsistency is explicit.
-- Ready-to-evolve base for CI, new data sources, and additional metrics.
+- Automatic CI ensures no push breaks the validations.
+
+### Próximos passos / Next steps
+**PT**
+- Adicionar validações por domínio de negócio.
+- Suporte a múltiplos formatos de entrada (JSON, Parquet).
+- Publicar relatório HTML via GitHub Pages.
+
+**EN**
+- Add business domain validations.
+- Support multiple input formats (JSON, Parquet).
+- Publish HTML report via GitHub Pages.
