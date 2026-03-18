@@ -5,7 +5,6 @@ import argparse
 from .pipeline import run_pipeline
 
 
-
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Executa pipeline ETL com Data Quality.")
     parser.add_argument("--input", required=True, help="Caminho do CSV de entrada ou pasta com CSVs.")
@@ -13,18 +12,29 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
-    result = run_pipeline(args.input, args.output)
+
+    try:
+        result = run_pipeline(args.input, args.output)
+    except FileNotFoundError as e:
+        print(f"Erro: arquivo não encontrado — {e}")
+        raise SystemExit(1)
+    except ValueError as e:
+        print(f"Erro: dados inválidos — {e}")
+        raise SystemExit(1)
+    except Exception as e:
+        print(f"Erro inesperado — {e}")
+        raise SystemExit(1)
+
     metadata = result["metadata"]
     print("Pipeline concluído com sucesso.")
-    print(f"Arquivos fonte: {metadata['source_count']}")
-    print(f"Total de linhas: {metadata['total_rows']}")
+    print(f"Arquivos fonte:       {metadata['source_count']}")
+    print(f"Total de linhas:      {metadata['total_rows']}")
     print(f"Linhas com problemas: {metadata['rows_with_issues']}")
-    print(f"Total de evidências: {metadata['total_evidences']}")
-    print(f"DQ score: {metadata['dq_score']:.1%}")
+    print(f"Total de evidências:  {metadata['total_evidences']}")
+    print(f"DQ score:             {metadata['dq_score']:.1%}")
 
 
 if __name__ == "__main__":

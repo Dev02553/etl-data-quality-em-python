@@ -5,18 +5,17 @@ from pathlib import Path
 
 import pandas as pd
 
+from .models import DQIssue
 from .reporting import write_workbook
 from .rules import build_rules
-
 
 
 def _discover_csv_files(input_path: Path) -> list[Path]:
     if input_path.is_file():
         return [input_path]
     if input_path.is_dir():
-        return sorted([path for path in input_path.glob('*.csv') if path.is_file()])
+        return sorted([path for path in input_path.glob("*.csv") if path.is_file()])
     raise FileNotFoundError(f"Input não encontrado: {input_path}")
-
 
 
 def _extract(input_path: Path) -> tuple[pd.DataFrame, list[dict], list[str]]:
@@ -46,7 +45,6 @@ def _extract(input_path: Path) -> tuple[pd.DataFrame, list[dict], list[str]]:
     return extracted, stage_logs, source_files
 
 
-
 def _transform(df: pd.DataFrame) -> tuple[pd.DataFrame, list[dict]]:
     transformed = df.copy()
 
@@ -69,8 +67,14 @@ def _transform(df: pd.DataFrame) -> tuple[pd.DataFrame, list[dict]]:
     return transformed, stage_logs
 
 
+REQUIRED_COLUMNS = {"customer_id", "email", "country", "signup_date", "credit_limit"}
+
 
 def _validate(df: pd.DataFrame) -> tuple[list[dict], list[dict], list[dict]]:
+    missing = REQUIRED_COLUMNS - set(df.columns)
+    if missing:
+        raise ValueError(f"Colunas ausentes no CSV: {sorted(missing)}")
+
     issue_rows: list[dict] = []
     summary_rows: list[dict] = []
     stage_logs: list[dict] = []
@@ -80,15 +84,24 @@ def _validate(df: pd.DataFrame) -> tuple[list[dict], list[dict], list[dict]]:
         failed = df.loc[mask]
 
         for _, row in failed.iterrows():
+            issue = DQIssue(
+                row_number=int(row["row_number"]),
+                rule_name=rule.name,
+                severity=rule.severity,
+                column_name=rule.column_name,
+                message=rule.message_builder(row),
+                invalid_value=row.get(rule.column_name),
+                source_file=row.get("source_file"),
+            )
             issue_rows.append(
                 {
-                    "row_number": int(row["row_number"]),
-                    "rule_name": rule.name,
-                    "severity": rule.severity,
-                    "column_name": rule.column_name,
-                    "message": rule.message_builder(row),
-                    "invalid_value": row.get(rule.column_name),
-                    "source_file": row.get("source_file"),
+                    "row_number": issue.row_number,
+                    "rule_name": issue.rule_name,
+                    "severity": issue.severity,
+                    "column_name": issue.column_name,
+                    "message": issue.message,
+                    "invalid_value": issue.invalid_value,
+                    "source_file": issue.source_file,
                 }
             )
 
@@ -110,7 +123,6 @@ def _validate(df: pd.DataFrame) -> tuple[list[dict], list[dict], list[dict]]:
         )
 
     return issue_rows, summary_rows, stage_logs
-
 
 
 def run_pipeline(input_path: str | Path, output_path: str | Path) -> dict:

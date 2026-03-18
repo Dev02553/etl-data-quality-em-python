@@ -14,6 +14,7 @@ class DQIssue:
     column_name: str
     message: str
     invalid_value: Any
+    source_file: str | None = None
 
 
 @dataclass(slots=True)

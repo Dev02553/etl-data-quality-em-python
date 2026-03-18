@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from datetime import timezone
 
 import pandas as pd
 
@@ -62,7 +61,10 @@ def build_rules() -> list[Rule]:
             severity="medium",
             column_name="country",
             description="country deve pertencer ao domínio LATAM permitido.",
-            evaluator=lambda df: ~df["country"].fillna("").astype(str).str.upper().isin(ALLOWED_COUNTRIES),
+            evaluator=lambda df: (
+                (~_blank(df["country"]))
+                & (~df["country"].astype(str).str.upper().isin(ALLOWED_COUNTRIES))
+            ),
             message_builder=lambda row: f"country fora do domínio: {row['country']}",
         ),
         Rule(
@@ -78,7 +80,7 @@ def build_rules() -> list[Rule]:
             severity="medium",
             column_name="signup_date",
             description="signup_date não pode estar no futuro.",
-            evaluator=lambda df: _parsed_dates(df).gt(pd.Timestamp.now(tz=timezone.utc).tz_localize(None)),
+            evaluator=lambda df: _parsed_dates(df).gt(pd.Timestamp.now()),
             message_builder=lambda row: f"data futura identificada: {row['signup_date']}",
         ),
         Rule(
