@@ -26,10 +26,3 @@ jobs:
 
       - name: Run tests
         run: python -m pytest tests/ -v
-```
-
-O workflow precisa de um `requirements.txt` para instalar as dependências. Crie o arquivo `requirements.txt` na raiz do projeto ETL:
-```
-pandas
-openpyxl
-pytest
