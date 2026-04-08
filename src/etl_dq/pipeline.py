@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+from .reporting_html import write_html_report
 from datetime import datetime
 from pathlib import Path
 
@@ -173,6 +173,14 @@ def run_pipeline(input_path: str | Path, output_path: str | Path) -> dict:
         clean_rows=transformed_df.to_dict(orient="records"),
         metadata=metadata,
         stage_logs=stage_logs,
+    )
+
+    html_path = output_path.with_suffix(".html")
+    write_html_report(
+        output_path=html_path,
+        summary_rows=summary_rows,
+        evidence_rows=issue_rows,
+        metadata=metadata,
     )
 
     return {

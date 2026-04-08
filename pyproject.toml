@@ -5,17 +5,18 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "etl-data-quality"
 version = "0.1.0"
-description = "Pipeline ETL com foco em Data Quality, rastreabilidade e evidências."
+description = "Pipeline ETL com Data Quality em Python"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-  "pandas>=2.2",
-  "openpyxl>=3.1"
+    "pandas==3.0.2",
+    "openpyxl==3.1.5",
+    "XlsxWriter==3.2.9"
 ]
 
 [project.optional-dependencies]
 dev = [
-  "pytest>=8.0"
+    "pytest==9.0.2"
 ]
 
 [project.scripts]

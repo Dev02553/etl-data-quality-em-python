@@ -1,4 +1,3 @@
-README.md
 pyproject.toml
 src/etl_data_quality.egg-info/PKG-INFO
 src/etl_data_quality.egg-info/SOURCES.txt
@@ -11,5 +10,6 @@ src/etl_dq/cli.py
 src/etl_dq/models.py
 src/etl_dq/pipeline.py
 src/etl_dq/reporting.py
+src/etl_dq/reporting_html.py
 src/etl_dq/rules.py
 tests/test_rules_and_pipeline.py
