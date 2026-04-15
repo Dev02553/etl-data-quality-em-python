@@ -1,30 +1,33 @@
-name: Tests
+name: E2E Tests (ParaBank)
 
 on:
   push:
-    branches: [ main, master ]
   pull_request:
-    branches: [ main, master ]
 
 jobs:
   test:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
-          python-version: "3.12"
+          distribution: temurin
+          java-version: '17'
+          cache: maven
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-          python -m pip install -e ".[dev]"
+      - name: Set up Chrome
+        uses: browser-actions/setup-chrome@v1
 
-      - name: Run tests
-        run: |
-          python -m pytest -q
+      - name: Run tests (headless)
+        run: mvn -q -Dheadless=true clean test
+
+      - name: Upload screenshots (if failed)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: target/screenshots
